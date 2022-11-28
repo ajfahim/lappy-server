@@ -29,6 +29,12 @@ async function run() {
         const usersCollection = client.db('lappy').collection('users');
         const categoriesCollection = client.db('lappy').collection('categories');
 
+        app.post("/products", async (req, res) => {
+            const product = req.body;
+            const result = await productsCollection.insertOne(product);
+            res.send(result)
+        })
+
         app.get("/advertised", async (req, res) => {
             const query = {
                 isAdvertised: true
