@@ -27,6 +27,7 @@ async function run() {
     try {
         const productsCollection = client.db('lappy').collection('products');
         const usersCollection = client.db('lappy').collection('users');
+        const categoriesCollection = client.db('lappy').collection('categories');
 
         app.get("/advertised", async (req, res) => {
             const query = {
@@ -46,7 +47,7 @@ async function run() {
             const email = req.params.email;
             const query = { email }
             const user = await usersCollection.findOne(query);
-            res.send({ isAdmin: user?.role === 'admin' });
+            res.send({ isAdmin: user?.isAdmin });
         })
 
         app.get('/users/seller/:email', async (req, res) => {
@@ -54,6 +55,12 @@ async function run() {
             const query = { email }
             const user = await usersCollection.findOne(query);
             res.send({ isSeller: user?.role === 'seller' });
+        })
+
+        app.get('/categories', async (req, res) => {
+            const query = {};
+            const result = await categoriesCollection.find(query).toArray();
+            res.send(result)
         })
 
         app.get('/jwt', async (req, res) => {
