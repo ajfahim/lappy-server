@@ -21,7 +21,25 @@ app.get('/', (req, res) => {
     res.send("server is running")
 })
 
+function verifyJWT(req, res, next) {
 
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send('unauthorized access');
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+        if (err) {
+            console.log(err)
+            return res.status(403).send({ message: 'forbidden access' })
+        }
+        req.decoded = decoded;
+        next();
+    })
+
+}
 
 async function run() {
     try {
@@ -37,21 +55,27 @@ async function run() {
         //     res.send(result)
         // })
 
+        app.get("/products", async (req, res) => {
+            const query = {};
+            const result = productsCollection.find(query).toArray();
+            res.send(result)
+        })
+
         //TODO: verify if seller account
-        app.post("/products", async (req, res) => {
+        app.post("/products", verifyJWT, async (req, res) => {
             const product = req.body;
             const result = await productsCollection.insertOne(product);
             res.send(result)
         })
 
-        app.delete("/products/:id", async (req, res) => {
+        app.delete("/products/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await productsCollection.deleteOne(query);
             res.send(result)
         })
 
-        app.put("/products/:id", async (req, res) => {
+        app.put("/products/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
             console.log(id)
             const data = req.body
@@ -74,20 +98,22 @@ async function run() {
 
         app.get("/advertised", async (req, res) => {
             const query = {
-                isAdvertised: true
+                isAdvertised: true,
+                status: "listed"
             }
             const result = await productsCollection.find(query).toArray();
             res.send(result)
         });
 
-        app.get("/users/:id", async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) }
-            const result = await usersCollection.findOne(query).toArray();
+        app.get("/users/:email", async (req, res) => {
+            const email = req.params.email;
+            console.log("email", email)
+            const query = { email: email }
+            const result = await usersCollection.findOne(query);
             res.send(result)
         })
 
-        app.post("/users", async (req, res) => {
+        app.post("/users", verifyJWT, async (req, res) => {
             const user = req.body;
             const result = await usersCollection.insertOne(user);
             res.send(result)
