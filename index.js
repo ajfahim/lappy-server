@@ -57,7 +57,7 @@ async function run() {
 
         app.get("/products", async (req, res) => {
             const query = {};
-            const result = productsCollection.find(query).toArray();
+            const result = await productsCollection.find(query).toArray();
             res.send(result)
         })
 
@@ -136,6 +136,13 @@ async function run() {
         app.get('/categories', async (req, res) => {
             const query = {};
             const result = await categoriesCollection.find(query).toArray();
+            res.send(result)
+        })
+
+        app.get('/categories/:name', async (req, res) => {
+            const name = req.params.name
+            const query = { category: name };
+            const result = await productsCollection.find(query).toArray();
             res.send(result)
         })
 
