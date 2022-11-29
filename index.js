@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 
 const app = express();
@@ -29,9 +29,37 @@ async function run() {
         const usersCollection = client.db('lappy').collection('users');
         const categoriesCollection = client.db('lappy').collection('categories');
 
+        app.get("/products/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await productsCollection.findOne(query).toArray();
+            res.send(result)
+        })
+
+        //TODO: verify if seller account
         app.post("/products", async (req, res) => {
             const product = req.body;
             const result = await productsCollection.insertOne(product);
+            res.send(result)
+        })
+
+        app.put("/products/:id", async (req, res) => {
+            const id = req.params.id;
+            const data = req.body
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updatedDoc = {
+                $set: data
+            }
+            const result = await productsCollection.updateOne(filter, updatedDoc, options)
+            res.send(result)
+        })
+
+        //get products added by specific user
+        app.get("/products/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { userEmail: email }
+            const result = await productsCollection.find(query).toArray();
             res.send(result)
         })
 
