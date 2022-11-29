@@ -29,12 +29,13 @@ async function run() {
         const usersCollection = client.db('lappy').collection('users');
         const categoriesCollection = client.db('lappy').collection('categories');
 
-        app.get("/products/:id", async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) }
-            const result = await productsCollection.findOne(query).toArray();
-            res.send(result)
-        })
+        // app.get("/products/:id", async (req, res) => {
+        //     const id = req.params.id;
+        //     console.log("id: ", id)
+        //     const query = { _id: ObjectId(id) }
+        //     const result = await productsCollection.findOne(query).toArray();
+        //     res.send(result)
+        // })
 
         //TODO: verify if seller account
         app.post("/products", async (req, res) => {
@@ -43,8 +44,16 @@ async function run() {
             res.send(result)
         })
 
+        app.delete("/products/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await productsCollection.deleteOne(query);
+            res.send(result)
+        })
+
         app.put("/products/:id", async (req, res) => {
             const id = req.params.id;
+            console.log(id)
             const data = req.body
             const filter = { _id: ObjectId(id) };
             const options = { upsert: true };
@@ -56,7 +65,7 @@ async function run() {
         })
 
         //get products added by specific user
-        app.get("/products/:email", async (req, res) => {
+        app.get("/products/user/:email", async (req, res) => {
             const email = req.params.email;
             const query = { userEmail: email }
             const result = await productsCollection.find(query).toArray();
